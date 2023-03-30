@@ -1,13 +1,13 @@
-package sol.link.solmodules;
+package sol.link.perfmon;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SolModulesApplicationTests {
+class SolModulePerfmonApplicationTests {
 
-    @Test
-    void contextLoads() {
-    }
+	@Test
+	void contextLoads() {
+	}
 
 }
