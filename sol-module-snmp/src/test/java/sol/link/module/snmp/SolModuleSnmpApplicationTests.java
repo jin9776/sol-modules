@@ -1,4 +1,4 @@
-package sol.link.solmodulesnmp;
+package sol.link.module.snmp;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

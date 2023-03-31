@@ -1,4 +1,4 @@
-package sol.link.solmodulesnmp;
+package sol.link.module.snmp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
