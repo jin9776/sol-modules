@@ -1,21 +1,21 @@
-# sol-modules v1.x
-- spring boot 2.7.3
-- java 11
+# sol-modules v2.x
+- spring boot 3.0.5
+- java 17
 
 ---
 
 ## develop version
-#### 1.3.20
+#### 2.0.0
     
 
 ---
 ## deploy version
 ### module
-- sol-module-perfmon `1.3.10`
-- sol-module-snmp `1.3.10`
+- sol-module-perfmon `2.0.0`
+- sol-module-snmp `2.0.0`
 
 ___
 
 ### parent pom
-#### 1.3.20
+#### 2.0.0
     최초 모듈 분리
