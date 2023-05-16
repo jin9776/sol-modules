@@ -16,6 +16,9 @@
 
     <properties>
         <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+
         <snmp4j.version>3.7.7</snmp4j.version>
         <snmp4j.agent.version>3.6.5</snmp4j.agent.version>
     </properties>
