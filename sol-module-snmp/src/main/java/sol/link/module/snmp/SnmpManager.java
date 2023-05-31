@@ -32,7 +32,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class SnmpManager {
+public class SnmpManager implements AutoCloseable {
     private int NON_REPEATERS = 0;
     private int MAX_REPETITIONS = 100;
 
@@ -140,98 +140,7 @@ public class SnmpManager {
         this.target.setVersion(this.snmpVer);
     }
 
-    /**
-     * snmp socket connect
-     * @throws IOException
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Deprecated
-    public void connect2(TransportMapping transportMapping) throws IOException {
-        if (this.snmpVer == SnmpConstants.version3) {
-            if (transportMapping instanceof DefaultUdpTransportMapping) {
-                ((DefaultUdpTransportMapping)transportMapping).setAsyncMsgProcessingSupported(false);
-            }
-
-            /*
-            USM usm = new USM(SecurityProtocols.getInstance(), new OctetString(MPv3.createLocalEngineID()), 0);
-            SecurityModels.getInstance().addSecurityModel(usm);
-             */
-
-            if (this.threadDispatcher) {
-                snmpSocket = new Snmp(transportMapping);
-                snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv1());
-                snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv2c());
-                snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv3());
-            } else {
-                snmpSocket = new Snmp(transportMapping);
-            }
-
-            USMFactory.getInstance(this.snmpSocket, this.localEngineId, this.engineBoots);
-            transportMapping.listen();
-
-            /*
-            SecurityProtocols.getInstance().addAuthenticationProtocol(new AuthSHA());
-            SecurityProtocols.getInstance().addAuthenticationProtocol(new AuthMD5());
-
-			    addAuthenticationProtocol(new AuthHMAC128SHA224());
-                addAuthenticationProtocol(new AuthHMAC192SHA256());
-                addAuthenticationProtocol(new AuthHMAC256SHA384());
-                addPrivacyProtocol(new PrivDES());
-                addPrivacyProtocol(new PrivAES128());
-                addPrivacyProtocol(new PrivAES192());
-                addAuthenticationProtocol(new AuthHMAC384SHA512());
-                addPrivacyProtocol(new PrivAES256());
-                new Priv3DES()
-			 */
-
-            // add user to the USM
-            OID authId = null, privId = null;
-            if (this.snmpAuthType == 1)
-                authId = AuthSHA.ID;
-            else if (this.snmpAuthType == 2)
-                authId = AuthMD5.ID;
-
-            if (this.snmpEncryptKey != null && !this.snmpEncryptKey.isEmpty()) {
-                switch (this.snmpEncryptType) {
-                    case 1:
-                        privId = PrivAES128.ID;
-                        break;
-                    case 2:
-                        privId = PrivDES.ID;
-                        break;
-                    case 3:
-                        privId = PrivAES192.ID;
-                        break;
-                    case 4:
-                        privId = PrivAES256.ID;
-                        break;
-                }
-            }
-
-            UsmUser usmUser = null;
-            if (this.snmpSecurityLevel == 0) {
-                usmUser = new UsmUser(new OctetString(this.snmpUserId), null, null, null, null);
-            } else if (this.snmpSecurityLevel == 1) {
-                usmUser = new UsmUser(new OctetString(this.snmpUserId), authId, new OctetString(this.snmpAuthKey), null, null);
-            } else if (this.snmpSecurityLevel == 2) {
-                usmUser = new UsmUser(new OctetString(this.snmpUserId), authId, new OctetString(this.snmpAuthKey), privId, new OctetString(this.snmpEncryptKey));
-            }
-
-            //snmpSocket.getUSM().addUser(new OctetString(usmUser.getSecurityName()), usmUser);
-            this.usmUserEntry = USMFactory.addUser(snmpSocket, usmUser);
-        } else {
-            snmpSocket = new Snmp(transportMapping);
-            transportMapping.listen();
-        }
-
-//        if (!transportMapping.isListening()) {
-//            transportMapping.listen();
-//        }
-    }
-
-    /**
-     * snmp socket close
-     */
+    @Override
     public void close() {
         try {
 //            if (this.usmUserEntry != null) {
