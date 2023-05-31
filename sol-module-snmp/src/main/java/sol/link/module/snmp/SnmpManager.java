@@ -32,7 +32,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
-public class SnmpManager {
+public class SnmpManager implements AutoCloseable {
     private int NON_REPEATERS = 0;
     private int MAX_REPETITIONS = 100;
 
@@ -145,7 +145,7 @@ public class SnmpManager {
      * @throws IOException
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Deprecated
+    @Deprecated(since = "2.x", forRemoval = true)
     public void connect2(TransportMapping transportMapping) throws IOException {
         if (this.snmpVer == SnmpConstants.version3) {
             if (transportMapping instanceof DefaultUdpTransportMapping) {
@@ -229,9 +229,8 @@ public class SnmpManager {
 //        }
     }
 
-    /**
-     * snmp socket close
-     */
+
+    @Override
     public void close() {
         try {
 //            if (this.usmUserEntry != null) {
