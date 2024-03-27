@@ -8,7 +8,6 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.snmp4j.*;
 import org.snmp4j.event.ResponseEvent;
-import org.snmp4j.fluent.SnmpBuilder;
 import org.snmp4j.fluent.SnmpCompletableFuture;
 import org.snmp4j.fluent.TargetBuilder;
 import org.snmp4j.mp.MPv1;
@@ -21,6 +20,9 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.snmp4j.util.DefaultPDUFactory;
 import org.snmp4j.util.TreeEvent;
 import org.snmp4j.util.TreeUtils;
+import sol.link.module.snmp.custom.SnmpBuilder2;
+import sol.link.module.snmp.custom.TargetBuilder2;
+import sol.link.module.snmp.security.PrivAES256C;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,9 +59,11 @@ public class SnmpManager implements AutoCloseable {
     private boolean threadDispatcher = false;
 
     Target<?> target = null;
-    TargetBuilder<?> targetBuilder = null;
+    //TargetBuilder<?> targetBuilder = null;
+    TargetBuilder2<?> targetBuilder = null;
     byte[] snmpEngineId = null;
 
+    /*
     public void connect() throws IOException{
         if (this.snmpSocket != null) {
             this.snmpSocket.close();
@@ -74,10 +78,12 @@ public class SnmpManager implements AutoCloseable {
 
         targetBuilder = snmpBuilder.target(targetAddress);
         if (this.snmpVer == SnmpConstants.version3) {
+            snmpBuilder.securityProtocols(SecurityProtocols.SecurityProtocolSet.maxCompatibility).v3();
+            //snmpBuilder.v3();
             if (this.localEngineId != null) {
-                snmpSocket = snmpBuilder.securityProtocols(SecurityProtocols.SecurityProtocolSet.maxCompatibility).v3().usm(this.localEngineId, this.engineBoots).build();
+                snmpSocket = snmpBuilder.usm(this.localEngineId, this.engineBoots).build();
             } else {
-                snmpSocket = snmpBuilder.securityProtocols(SecurityProtocols.SecurityProtocolSet.maxCompatibility).v3().usm().build();
+                snmpSocket = snmpBuilder.usm().build();
             }
 
             byte[] targetEngineId = snmpSocket.discoverAuthoritativeEngineID(targetAddress, this.timeout);
@@ -124,7 +130,89 @@ public class SnmpManager implements AutoCloseable {
                 }
             }
             this.target = userBuilder.done().timeout(this.timeout).retries(this.retries).build();
+        } else {
+            if (this.snmpVer == SnmpConstants.version2c) {
+                this.targetBuilder.v2c();
+                snmpBuilder.v2c();
+            } else {
+                this.targetBuilder.v1();
+                snmpBuilder.v1();
+            }
+            snmpSocket = snmpBuilder.build();
+            this.target = snmpBuilder.target(targetAddress).community(new OctetString(this.roCommunity))
+                    .timeout(this.timeout).retries(this.retries).build();
+        }
+        this.target.setVersion(this.snmpVer);
+    }
+*/
+    public void connect() throws IOException{
+        if (this.snmpSocket != null) {
+            this.snmpSocket.close();
+            this.snmpSocket = null;
+        }
 
+        //int availableProcessors = Runtime.getRuntime().availableProcessors();
+        Address targetAddress = GenericAddress.parse(String.format("udp:%s/%s", this.address, this.port));
+
+        SnmpBuilder2 snmpBuilder = new SnmpBuilder2();
+        snmpBuilder.initSecurityProtocols();
+        snmpBuilder.udp(); //.threads(availableProcessors);
+
+        targetBuilder = snmpBuilder.target2(targetAddress);
+        if (this.snmpVer == SnmpConstants.version3) {
+            //snmpBuilder.securityProtocols(SecurityProtocols.SecurityProtocolSet.maxCompatibility).v3();
+            snmpBuilder.v3();
+            if (this.localEngineId != null) {
+                snmpSocket = snmpBuilder.usm(this.localEngineId, this.engineBoots).build();
+            } else {
+                snmpSocket = snmpBuilder.usm().build();
+            }
+
+            byte[] targetEngineId = snmpSocket.discoverAuthoritativeEngineID(targetAddress, this.timeout);
+            snmpEngineId = null;
+            if (this.targetEngineId == null) {
+                snmpEngineId = targetEngineId;
+            } else {
+                snmpEngineId = this.targetEngineId.getValue();
+            }
+
+            TargetBuilder2<?>.DirectUserBuilder userBuilder = null;
+            if (snmpEngineId == null) {
+                userBuilder = targetBuilder.user(this.snmpUserId);
+            } else {
+                userBuilder = targetBuilder.user(this.snmpUserId, snmpEngineId);
+            }
+
+            TargetBuilder.AuthProtocol authProtocol = null;
+            switch (this.snmpAuthType) {
+                case 0: break;
+                case 1: authProtocol = TargetBuilder.AuthProtocol.sha1; break;
+                case 2: authProtocol = TargetBuilder.AuthProtocol.md5; break;
+                case 3: authProtocol = TargetBuilder.AuthProtocol.hmac128sha224; break;
+                case 4: authProtocol = TargetBuilder.AuthProtocol.hmac192sha256; break;
+                case 5: authProtocol = TargetBuilder.AuthProtocol.hmac256sha384; break;
+                case 6: authProtocol = TargetBuilder.AuthProtocol.hmac384sha512; break;
+                default: throw new UnsupportedOperationException("Unknown auth protocol : " + this.snmpAuthType);
+            }
+
+            if (this.snmpSecurityLevel == 1) {
+                userBuilder.auth(authProtocol).authPassphrase(this.snmpAuthKey);
+            } else if (this.snmpSecurityLevel == 2) {
+                userBuilder.auth(authProtocol).authPassphrase(this.snmpAuthKey);
+
+                switch (this.snmpEncryptType) {
+                    case 1: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes128).privPassphrase(this.snmpEncryptKey); break;
+                    case 2: userBuilder.priv(TargetBuilder2.PrivProtocol2.des).privPassphrase(this.snmpEncryptKey); break;
+                    case 3: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes192).privPassphrase(this.snmpEncryptKey); break;
+                    case 4: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes256).privPassphrase(this.snmpEncryptKey); break;
+                    case 5: userBuilder.priv(TargetBuilder2.PrivProtocol2._3des).privPassphrase(this.snmpEncryptKey); break;
+                    case 6: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes192with3DESKeyExtension).privPassphrase(this.snmpEncryptKey); break;
+                    case 7: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes256with3DESKeyExtension).privPassphrase(this.snmpEncryptKey); break;
+                    case 8: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes256c).privPassphrase(this.snmpEncryptKey); break;
+                    default: throw new UnsupportedOperationException("Unknown privacy protocol : " + this.snmpEncryptType);
+                }
+            }
+            this.target = userBuilder.done().timeout(this.timeout).retries(this.retries).build();
         } else {
             if (this.snmpVer == SnmpConstants.version2c) {
                 this.targetBuilder.v2c();
@@ -168,10 +256,10 @@ public class SnmpManager implements AutoCloseable {
 
             USMFactory.getInstance(this.snmpSocket, this.localEngineId, this.engineBoots);
             transportMapping.listen();
-
-            /*
             SecurityProtocols.getInstance().addAuthenticationProtocol(new AuthSHA());
             SecurityProtocols.getInstance().addAuthenticationProtocol(new AuthMD5());
+            /*
+
 
 			    addAuthenticationProtocol(new AuthHMAC128SHA224());
                 addAuthenticationProtocol(new AuthHMAC192SHA256());
@@ -203,7 +291,7 @@ public class SnmpManager implements AutoCloseable {
                         privId = PrivAES192.ID;
                         break;
                     case 4:
-                        privId = PrivAES256.ID;
+                        privId = PrivAES256C.ID;
                         break;
                 }
             }
@@ -223,10 +311,6 @@ public class SnmpManager implements AutoCloseable {
             snmpSocket = new Snmp(transportMapping);
             transportMapping.listen();
         }
-
-//        if (!transportMapping.isListening()) {
-//            transportMapping.listen();
-//        }
     }
 
 
@@ -280,6 +364,20 @@ public class SnmpManager implements AutoCloseable {
         pdu.setType(PDU.GET);
         return parseResponse(send(pdu));
          */
+    }
+//    public VariableBinding[] snmpGet3(OID... oids) throws IOException {
+//        PDU pdu = this.targetBuilder3.pdu().type(PDU.GET).oid(oids).contextName("").build();
+//        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu));
+//        /*
+//        PDU pdu = createPdu(oids);
+//        pdu.setType(PDU.GET);
+//        return parseResponse(send(pdu));
+//         */
+//    }
+    public VariableBinding[] snmpGet2(OID... oids) throws IOException {
+        PDU pdu = createPdu(oids);
+        pdu.setType(PDU.GET);
+        return parseResponse(send(pdu));
     }
     /**
      * getnext snmp
