@@ -21,6 +21,8 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.snmp4j.util.DefaultPDUFactory;
 import org.snmp4j.util.TreeEvent;
 import org.snmp4j.util.TreeUtils;
+import sol.link.module.snmp.custom.SnmpBuilder2;
+import sol.link.module.snmp.custom.TargetBuilder2;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,7 +59,7 @@ public class SnmpManager implements AutoCloseable {
     private boolean threadDispatcher = false;
 
     Target<?> target = null;
-    TargetBuilder<?> targetBuilder = null;
+    TargetBuilder2<?> targetBuilder = null;
     byte[] snmpEngineId = null;
 
     public void connect() throws IOException{
@@ -69,15 +71,17 @@ public class SnmpManager implements AutoCloseable {
         //int availableProcessors = Runtime.getRuntime().availableProcessors();
         Address targetAddress = GenericAddress.parse(String.format("udp:%s/%s", this.address, this.port));
 
-        SnmpBuilder snmpBuilder = new SnmpBuilder();
+        SnmpBuilder2 snmpBuilder = new SnmpBuilder2();
         snmpBuilder.udp(); //.threads(availableProcessors);
 
-        targetBuilder = snmpBuilder.target(targetAddress);
+        targetBuilder = snmpBuilder.target2(targetAddress);
         if (this.snmpVer == SnmpConstants.version3) {
+            //snmpBuilder.securityProtocols(SecurityProtocols.SecurityProtocolSet.maxCompatibility).v3();
+            snmpBuilder.v3();
             if (this.localEngineId != null) {
-                snmpSocket = snmpBuilder.securityProtocols(SecurityProtocols.SecurityProtocolSet.maxCompatibility).v3().usm(this.localEngineId, this.engineBoots).build();
+                snmpSocket = snmpBuilder.v3().usm(this.localEngineId, this.engineBoots).build();
             } else {
-                snmpSocket = snmpBuilder.securityProtocols(SecurityProtocols.SecurityProtocolSet.maxCompatibility).v3().usm().build();
+                snmpSocket = snmpBuilder.v3().usm().build();
             }
 
             byte[] targetEngineId = snmpSocket.discoverAuthoritativeEngineID(targetAddress, this.timeout);
@@ -88,7 +92,7 @@ public class SnmpManager implements AutoCloseable {
                 snmpEngineId = this.targetEngineId.getValue();
             }
 
-            TargetBuilder<?>.DirectUserBuilder userBuilder = null;
+            TargetBuilder2<?>.DirectUserBuilder userBuilder = null;
             if (snmpEngineId == null) {
                 userBuilder = targetBuilder.user(this.snmpUserId);
             } else {
@@ -113,13 +117,15 @@ public class SnmpManager implements AutoCloseable {
                 userBuilder.auth(authProtocol).authPassphrase(this.snmpAuthKey);
 
                 switch (this.snmpEncryptType) {
-                    case 1: userBuilder.priv(TargetBuilder.PrivProtocol.aes128).privPassphrase(this.snmpEncryptKey); break;
-                    case 2: userBuilder.priv(TargetBuilder.PrivProtocol.des).privPassphrase(this.snmpEncryptKey); break;
-                    case 3: userBuilder.priv(TargetBuilder.PrivProtocol.aes192).privPassphrase(this.snmpEncryptKey); break;
-                    case 4: userBuilder.priv(TargetBuilder.PrivProtocol.aes256).privPassphrase(this.snmpEncryptKey); break;
-                    case 5: userBuilder.priv(TargetBuilder.PrivProtocol._3des).privPassphrase(this.snmpEncryptKey); break;
-                    case 6: userBuilder.priv(TargetBuilder.PrivProtocol.aes192with3DESKeyExtension).privPassphrase(this.snmpEncryptKey); break;
-                    case 7: userBuilder.priv(TargetBuilder.PrivProtocol.aes256with3DESKeyExtension).privPassphrase(this.snmpEncryptKey); break;
+                    case 1: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes128).privPassphrase(this.snmpEncryptKey); break;
+                    case 2: userBuilder.priv(TargetBuilder2.PrivProtocol2.des).privPassphrase(this.snmpEncryptKey); break;
+                    case 3: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes192).privPassphrase(this.snmpEncryptKey); break;
+                    case 4: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes256).privPassphrase(this.snmpEncryptKey); break;
+                    case 5: userBuilder.priv(TargetBuilder2.PrivProtocol2._3des).privPassphrase(this.snmpEncryptKey); break;
+                    case 6: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes192with3DESKeyExtension).privPassphrase(this.snmpEncryptKey); break;
+                    case 7: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes256with3DESKeyExtension).privPassphrase(this.snmpEncryptKey); break;
+                    case 8: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes256c).privPassphrase(this.snmpEncryptKey); break;
+                    case 9: userBuilder.priv(TargetBuilder2.PrivProtocol2.aes192c).privPassphrase(this.snmpEncryptKey); break;
                     default: throw new UnsupportedOperationException("Unknown privacy protocol : " + this.snmpEncryptType);
                 }
             }
