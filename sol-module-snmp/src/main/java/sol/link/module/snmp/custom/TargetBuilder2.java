@@ -188,6 +188,9 @@ public class TargetBuilder2<A extends Address>{
         public TargetBuilder2<A> done() {
             if (this.authoritativeEngineID == null) {
                 log.warn("targetBuilder : authoritativeEngineID is null. discover AuthoritativeEngineID.");
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException ignore) {}
                 this.authoritativeEngineID = TargetBuilder2.this.snmpBuilder.getSnmp().discoverAuthoritativeEngineID(TargetBuilder2.this.address, TargetBuilder2.this.timeoutMillis);
                 if (this.authoritativeEngineID == null) {
                     log.error("targetBuilder : authoritativeEngineID is null.");
