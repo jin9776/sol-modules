@@ -1,5 +1,6 @@
 package sol.link.module.snmp.custom;
 
+import lombok.extern.slf4j.Slf4j;
 import org.snmp4j.CommunityTarget;
 import org.snmp4j.DirectUserTarget;
 import org.snmp4j.SNMP4JSettings;
@@ -17,7 +18,9 @@ import org.snmp4j.transport.tls.TlsX509CertifiedTarget;
 import sol.link.module.snmp.security.PrivAES256C;
 
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 
+@Slf4j
 public class TargetBuilder2<A extends Address>{
     protected final SnmpBuilder2 snmpBuilder;
     protected A address;
@@ -184,7 +187,13 @@ public class TargetBuilder2<A extends Address>{
 
         public TargetBuilder2<A> done() {
             if (this.authoritativeEngineID == null) {
+                log.warn("targetBuilder : authoritativeEngineID is null. discover AuthoritativeEngineID.");
                 this.authoritativeEngineID = TargetBuilder2.this.snmpBuilder.getSnmp().discoverAuthoritativeEngineID(TargetBuilder2.this.address, TargetBuilder2.this.timeoutMillis);
+                if (this.authoritativeEngineID == null) {
+                    log.error("targetBuilder : authoritativeEngineID is null.");
+                } else {
+                    log.info("targetBuilder : authoritativeEngineID is {}", Arrays.toString(this.authoritativeEngineID));
+                }
             }
 
             byte[] authKey = null;
