@@ -17,6 +17,7 @@ import org.snmp4j.transport.tls.TlsTmSecurityCallback;
 import org.snmp4j.transport.tls.TlsX509CertifiedTarget;
 import sol.link.module.snmp.security.PrivAES256C;
 
+import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
@@ -190,7 +191,9 @@ public class TargetBuilder2<A extends Address>{
                 log.warn("targetBuilder : authoritativeEngineID is null. discover AuthoritativeEngineID.");
                 try {
                     Thread.sleep(300);
-                } catch (InterruptedException ignore) {}
+                    TargetBuilder2.this.snmpBuilder.getSnmp().close();
+                    TargetBuilder2.this.snmpBuilder.getSnmp().listen();
+                } catch (InterruptedException |IOException ignore) {}
                 this.authoritativeEngineID = TargetBuilder2.this.snmpBuilder.getSnmp().discoverAuthoritativeEngineID(TargetBuilder2.this.address, TargetBuilder2.this.timeoutMillis);
                 if (this.authoritativeEngineID == null) {
                     log.error("targetBuilder : authoritativeEngineID is null.");
