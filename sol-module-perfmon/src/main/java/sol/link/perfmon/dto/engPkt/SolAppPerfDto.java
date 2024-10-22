@@ -16,6 +16,7 @@ public class SolAppPerfDto {
     private String engIp;
     private int engPort;
     private boolean ssl;
+    private int clusterId;
 
     private int pid;
     private double cpuLoad;
