@@ -16,6 +16,7 @@ public class SolOsPerfDto {
     private String engIp;
     private int engPort;
     private boolean ssl;
+    private int clusterId;
 
     private int coreCnt;
     private double cpuLoad;
