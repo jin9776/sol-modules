@@ -676,7 +676,7 @@ public class SnmpManager implements AutoCloseable {
         } else if (this.snmpVer == SnmpConstants.version3) {
             return 3;
         } else {
-            throw new IllegalArgumentException("snmp vertsion not range 1-3 ");
+            throw new IllegalArgumentException("snmp version not range 1-3 ");
         }
     }
 
