@@ -150,6 +150,25 @@ class SnmpManagerTest {
         }
     }
 
+    @Test
+    void connectTestRMU() throws IOException {
+
+        SnmpManager snmpManager = new SnmpManager();
+        snmpManager.setSnmpVer(2).setAddress("175.197.37.170").setPort(161);
+        snmpManager.setRoCommunity("public");
+        snmpManager.setTimeout(10000);
+        // snmpManager.setRoCommunity("solinㅁㅁk");
+        snmpManager.connect();
+
+        snmpManager.getSnmpSocket().listen();
+
+        VariableBinding[] result =  snmpManager.snmpGet(new OID(".1.3.6.1.2.1.1.2.0"));
+        for (VariableBinding val : result) {
+            System.out.println(val.getVariable().toString());
+        }
+    }
+
+
 
     @Test
     void sample() throws IOException {
