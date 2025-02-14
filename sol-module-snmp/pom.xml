@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.4.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -19,8 +19,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <snmp4j.version>3.8.2</snmp4j.version>
-        <snmp4j.agent.version>3.8.1</snmp4j.agent.version>
+        <snmp4j.version>3.9.0</snmp4j.version>
+        <snmp4j.agent.version>3.8.2</snmp4j.agent.version>
     </properties>
 
     <dependencies>
@@ -38,13 +38,6 @@
             <groupId>org.snmp4j</groupId>
             <artifactId>snmp4j-agent</artifactId>
             <version>${snmp4j.agent.version}</version>
-        </dependency>
-
-        <!-- spring 취약점 -->
-        <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
-            <version>2.0</version>
         </dependency>
 
         <dependency>
