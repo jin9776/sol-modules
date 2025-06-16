@@ -713,4 +713,18 @@ public class SnmpManager implements AutoCloseable {
 //        }
         return target;
     }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+        if (this.target != null) {
+            this.target.setTimeout(timeout);
+        }
+    }
+
+    public void setRetries(int retries) {
+        this.retries = retries;
+        if (this.target != null) {
+            this.target.setRetries(retries);
+        }
+    }
 }
