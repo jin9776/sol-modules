@@ -11,7 +11,7 @@
 
     <groupId>sol.link</groupId>
     <artifactId>sol-module-perfmon</artifactId>
-    <version>1.4.1</version>
+    <version>1.4.4</version>
     <name>sol-module-perfmon</name>
     <description>sol-module-perfmon</description>
 
@@ -20,7 +20,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
 
-        <oshi.version>6.4.0</oshi.version>
+        <oshi.version>6.8.2</oshi.version>
     </properties>
 
     <dependencies>

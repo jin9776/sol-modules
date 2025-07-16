@@ -1,5 +1,6 @@
 package sol.link.perfmon;
 
+import com.sun.management.OperatingSystemMXBean;
 import lombok.Getter;
 import lombok.Setter;
 import oshi.SystemInfo;
@@ -10,6 +11,11 @@ import oshi.util.Util;
 import sol.link.perfmon.dto.ProcessInfoDto;
 import sol.link.perfmon.dto.engPkt.SolAppPerfDto;
 import sol.link.perfmon.dto.engPkt.SolOsPerfDto;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadMXBean;
 
 @Getter
 @Setter
@@ -47,6 +53,29 @@ public class PerfManager {
             dto.setThreadCnt(curProcess.getThreadCount());
         }
 
+        return dto;
+    }
+
+    public SolAppPerfDto collectAppPerfFromJvm() {
+        SolAppPerfDto dto = new SolAppPerfDto();
+
+        OperatingSystemMXBean osBean = (OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        RuntimeMXBean runtimeMx = ManagementFactory.getRuntimeMXBean();
+        Runtime runtime = Runtime.getRuntime();
+        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+
+        String pid = runtimeMx.getName().split("@")[0];
+
+        dto.setName(runtimeMx.getName());
+        try {
+            dto.setPid(Integer.parseInt(pid));
+        } catch (Exception e) { dto.setPid(-1); }
+
+        double cpuLoad = (double) Math.round(osBean.getProcessCpuLoad() * 10000) / 100;
+        dto.setCpuLoad(cpuLoad);
+        dto.setMemTotal(runtime.totalMemory());
+        dto.setMemUse(runtime.totalMemory() - runtime.freeMemory());
+        dto.setThreadCnt(threadBean.getThreadCount());
         return dto;
     }
 
