@@ -1,5 +1,6 @@
 package sol.link.perfmon;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -18,18 +19,27 @@ import java.lang.management.OperatingSystemMXBean;
 @Slf4j
 public class PerfManager {
 
-    private static final PerfManager INSTANCE = new PerfManager();
+    @Setter(AccessLevel.PRIVATE)
+    private static PerfManager instance;
     public static PerfManager getInstance() {
-        return INSTANCE;
+        if (instance == null) {
+            instance = new PerfManager();
+        }
+        return instance;
     }
-    private PerfManager() {}
+    private PerfManager() {
+        systemInfo = new SystemInfo();
+        hal = systemInfo.getHardware();
+        processor = hal.getProcessor();
+        memory = hal.getMemory();
+    }
 
     private static final double PERCENT = 100d;
 
-    private final SystemInfo systemInfo = new SystemInfo();
-    private final oshi.hardware.HardwareAbstractionLayer hal = systemInfo.getHardware();
-    private final CentralProcessor processor = hal.getProcessor();
-    private final GlobalMemory memory = hal.getMemory();
+    private final SystemInfo systemInfo;
+    private final oshi.hardware.HardwareAbstractionLayer hal;
+    private final CentralProcessor processor;
+    private final GlobalMemory memory;
     private OSProcess curProcess;
 
     private long pid;
