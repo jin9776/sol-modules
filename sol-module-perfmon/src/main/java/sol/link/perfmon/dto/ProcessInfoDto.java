@@ -11,8 +11,8 @@ public class ProcessInfoDto {
 
     private String name;
     private String args;
-    private int pid;
-    private int ppid;
+    private long pid;
+    private long ppid;
     private double cpuLoad;
     private long memTotal;
     private long memUse;

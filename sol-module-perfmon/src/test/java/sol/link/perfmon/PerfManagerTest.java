@@ -1,20 +1,32 @@
 package sol.link.perfmon;
 
 import org.junit.jupiter.api.Test;
-import sol.link.perfmon.dto.engPkt.SolAppPerfDto;
+
+import java.time.Duration;
+import java.time.Instant;
 
 public class PerfManagerTest {
-    PerfManager perfManager = new PerfManager();
+    PerfManager perfManager = PerfManager.getInstance();
 
     @Test
-    void osTest() {
-        System.out.println(perfManager.collectOsPerf());
-    }
+    void perf() throws InterruptedException {
 
-    @Test
-    void appTest() {
-        SolAppPerfDto dto = perfManager.collectAppPerf();
+        Instant startTime = Instant.now();
+
+        var dto = perfManager.getPerf();
         System.out.println(dto);
-        System.out.println(dto.getMemUseRate());
+        System.out.println(Duration.between(startTime, Instant.now()).getSeconds());
+
+        Thread.sleep(2000);
+
+        dto = perfManager.getPerf();
+        System.out.println(dto);
+        System.out.println(Duration.between(startTime, Instant.now()).getSeconds() );
+
+        Thread.sleep(2000);
+
+        dto = perfManager.getPerf();
+        System.out.println(dto);
+        System.out.println(Duration.between(startTime, Instant.now()).getSeconds() );
     }
 }

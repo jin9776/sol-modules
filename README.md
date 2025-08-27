@@ -1,6 +1,5 @@
 # sol-modules v2.x
-- spring boot 3.0.5
-- java 17
+- java 25
 
 ---
 
