@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sol.link.proto";
+option java_outer_classname = "PerfMonProto";
+
+package PerfMon;
+
+import "google/protobuf/empty.proto";
+
+service PerfMonService {
+
+  // Client streaming: Client sends a stream of PerfMetric messages, server responds with an empty message
+  rpc MetricStream (stream PerfMetric) returns (stream google.protobuf.Empty) {}
+
+}
+
+message PerfMetric {
+
+  int32 eng_id = 1 ;    // Engine ID
+  int32 cluster_id = 2; // Cluster ID
+  bool cluster_leader = 3; // Is Cluster Leader
+  string eng_type = 4; // Engine Type (e.g., "WORKER-ADMIN", "WORKER-DATA")
+  string eng_app_id = 5; // Engine Application ID
+  string eng_name = 6; // Engine Name
+  string eng_ip = 7;   // Engine IP Address
+  string eng_lang = 8; // Engine Language (e.g., "java", "python", "cpp")
+  int64 collect_dt = 9; // Collection DateTime (ymdhms)
+
+  int32 core_num = 10; // Number of CPU cores
+  double cpu_rate = 11;       // CPU usage percentage
+  double mem_use_rate = 12; // Memory usage percentage
+  int64 mem_total = 13;    // Total memory in bytes
+  int64 mem_used = 14;     // Used memory in bytes
+
+  int64 pid = 15;          // Process ID
+  double proc_cpu_rate = 16; // Process CPU usage percentage
+  double proc_mem_use_rate = 17; // Process Memory usage percentage
+  double proc_core_cpu_rate = 18; // Process Core CPU usage percentage
+
+  int64 proc_heap_total = 19; // Process Heap Total in bytes
+  int64 proc_heap_used = 20;  // Process Heap Used in bytes
+  double proc_heap_use_rate = 21; // Process Heap usage percentage
+  int32 proc_thread_count = 22; // Process Thread Count
+}
