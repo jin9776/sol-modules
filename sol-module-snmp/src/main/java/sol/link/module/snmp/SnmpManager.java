@@ -8,14 +8,10 @@ import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.snmp4j.*;
 import org.snmp4j.event.ResponseEvent;
-import org.snmp4j.fluent.SnmpBuilder;
 import org.snmp4j.fluent.SnmpCompletableFuture;
 import org.snmp4j.fluent.TargetBuilder;
-import org.snmp4j.mp.MPv1;
-import org.snmp4j.mp.MPv2c;
-import org.snmp4j.mp.MPv3;
 import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.security.*;
+import org.snmp4j.security.UsmUserEntry;
 import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.snmp4j.util.DefaultPDUFactory;
@@ -29,11 +25,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Slf4j
 @Accessors(chain = true)
 @Getter
 @Setter
 @ToString
+@Slf4j
 public class SnmpManager implements AutoCloseable {
     private int NON_REPEATERS = 0;
     private int MAX_REPETITIONS = 100;
