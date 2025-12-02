@@ -66,38 +66,38 @@ public class TrapManager {
             transport = new DefaultTcpTransportMapping((TcpAddress)listenAddress);
         }
 
-        USM usm = new USM(SecurityProtocols.getInstance(), new OctetString(MPv3.createLocalEngineID()), 0);
-        usm.setEngineDiscoveryEnabled(true);
-
-        snmpSocket = new Snmp(dispatcher, transport);
-        snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv1());
-        snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv2c());
-        snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv3(usm));
-        SecurityModels.getInstance().addSecurityModel(usm);
-
         // add user to the USM
         OID authId = null, privId = null;
-        if (this.snmpAuthType == 1)
+        if (this.snmpAuthType == 1) {
             authId = AuthSHA.ID;
-        else if (this.snmpAuthType == 2)
+            SecurityProtocols.getInstance().addAuthenticationProtocol(new AuthSHA());
+        } else if (this.snmpAuthType == 2) {
             authId = AuthMD5.ID;
+            SecurityProtocols.getInstance().addAuthenticationProtocol(new AuthMD5());
+        }
 
         if (this.snmpEncryptKey != null && !this.snmpEncryptKey.isEmpty()) {
             switch (this.snmpEncryptType) {
                 case 1:
                     privId = PrivAES128.ID;
+                    SecurityProtocols.getInstance().addPrivacyProtocol(new PrivAES128());
                     break;
                 case 2:
                     privId = PrivDES.ID;
+                    SecurityProtocols.getInstance().addPrivacyProtocol(new PrivDES());
                     break;
                 case 3:
                     privId = PrivAES192.ID;
+                    SecurityProtocols.getInstance().addPrivacyProtocol(new PrivAES192());
                     break;
                 case 4:
                     privId = PrivAES256.ID;
+                    SecurityProtocols.getInstance().addPrivacyProtocol(new PrivAES256());
                     break;
             }
         }
+
+        USM usm = new USM(SecurityProtocols.getInstance(), new OctetString(MPv3.createLocalEngineID()), 0);
 
         UsmUser usmUser = null;
         if (this.snmpSecurityLevel == 0) {
@@ -108,7 +108,15 @@ public class TrapManager {
             usmUser = new UsmUser(new OctetString(this.snmpUserId), authId, new OctetString(this.snmpAuthKey), privId, new OctetString(this.snmpEncryptKey));
         }
 
-        snmpSocket.getUSM().addUser(new OctetString(this.snmpUserId), usmUser);
+        SecurityModels.getInstance().addSecurityModel(usm);
+        usm.addUser(usmUser);
+
+        snmpSocket = new Snmp(dispatcher, transport);
+        snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv1());
+        snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv2c());
+        snmpSocket.getMessageDispatcher().addMessageProcessingModel(new MPv3(usm));
+
+        //snmpSocket.getUSM().addUser(new OctetString(this.snmpUserId), usmUser);
 
         snmpSocket.listen();
     }
