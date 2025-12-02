@@ -11,9 +11,10 @@
 
     <groupId>sol.link</groupId>
     <artifactId>sol-module-snmp</artifactId>
-    <version>1.4.1</version>
+    <version>1.4.2</version>
     <name>sol-module-snmp</name>
     <description>sol-module-snmp</description>
+    <packaging>jar</packaging>
 
     <properties>
         <java.version>11</java.version>
@@ -92,5 +93,12 @@
             <url>https://hmsc.myds.me:34001/repository/maven-public/</url>
         </repository>
     </repositories>
+
+    <distributionManagement>
+        <repository>
+            <id>solid-repo</id>
+            <url>https://hmsc.myds.me:34001/repository/maven-releases/</url>
+        </repository>
+    </distributionManagement>
 
 </project>
