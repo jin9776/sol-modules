@@ -11,7 +11,7 @@
 
     <groupId>sol.link</groupId>
     <artifactId>sol-module-snmp</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.6</version>
     <name>sol-module-snmp</name>
     <description>sol-module-snmp</description>
     <packaging>jar</packaging>
