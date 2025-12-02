@@ -19,25 +19,28 @@ import org.snmp4j.util.ThreadPool;
 
 import java.io.IOException;
 
+@Setter
 @Getter
 public class TrapManager {
 
     @Setter(AccessLevel.NONE)
     private MultiThreadedMessageDispatcher dispatcher;
-
+    @Setter(AccessLevel.NONE)
     private Snmp snmpSocket = null;
-    @Setter
+
     private int port = 162;
-    @Setter
     private String address = "0.0.0.0";
     /**
      * tcp / udp(default)
      */
-    @Setter
     private String protocol = "udp";
 
-    private int snmpSecurityLevel = 0, snmpAuthType = 1, snmpEncryptType = 1;
-    private String snmpUserId = "public", snmpAuthKey = null, snmpEncryptKey = null;
+    private int snmpSecurityLevel = 0;
+    private int snmpAuthType = 1;
+    private  int snmpEncryptType = 1;
+    private String snmpUserId = "public";
+    private String snmpAuthKey = null;
+    private String snmpEncryptKey = null;
 
     @Setter(AccessLevel.NONE)
     private ThreadPool threadPool;
