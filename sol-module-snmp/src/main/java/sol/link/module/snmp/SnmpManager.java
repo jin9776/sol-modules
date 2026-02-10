@@ -247,18 +247,33 @@ public class SnmpManager implements AutoCloseable {
      * walk snmp
      */
     public VariableBinding[] snmpWalk(OID oid) {
-        return snmpWalk(NON_REPEATERS, MAX_REPETITIONS, oid);
+        return snmpWalk(NON_REPEATERS, MAX_REPETITIONS, oid, null);
     }
-    public VariableBinding[] snmpWalk(int nonRepeaters, int maxRepetitions, OID oid) {
+    /**
+     * walk snmp
+     * @param pduType PDU.GETNEXT
+     */
+    public VariableBinding[] snmpWalk(OID oid, int pduType) {
+        return snmpWalk(NON_REPEATERS, MAX_REPETITIONS, oid, pduType);
+    }
+    public VariableBinding[] snmpWalk(int nonRepeaters, int maxRepetitions, OID oid, Integer pduType) {
         DefaultPDUFactory factory = new DefaultPDUFactory();
-        if (this.snmpVer == SnmpConstants.version3 || this.snmpVer == SnmpConstants.version2c) {
-            factory.setPduType(PDU.GETBULK);
-            if (this.snmpVer == SnmpConstants.version3 && this.snmpEngineId != null) {
-                factory.setContextEngineID(new OctetString(this.snmpEngineId));
+
+        if (pduType == null) {
+            if (this.snmpVer == SnmpConstants.version3 || this.snmpVer == SnmpConstants.version2c) {
+                factory.setPduType(PDU.GETBULK);
+
+            } else {
+                factory.setPduType(PDU.GETNEXT);
             }
         } else {
-            factory.setPduType(PDU.GETNEXT);
+            factory.setPduType(pduType);
         }
+
+        if (this.snmpVer == SnmpConstants.version3 && this.snmpEngineId != null) {
+            factory.setContextEngineID(new OctetString(this.snmpEngineId));
+        }
+
         factory.setNonRepeaters(nonRepeaters);
         factory.setMaxRepetitions(maxRepetitions);
 
