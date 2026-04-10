@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 @Accessors(chain = true)
 @Getter
@@ -289,7 +290,7 @@ public class SnmpManager implements AutoCloseable {
                     if (event.getStatus() == -1) {
                         throw new RuntimeException("oid[" + oid + "] " + event.getErrorMessage() + " result:" + result.size() + " timeout:" + this.timeout);
                     } else {
-                        log.warn("oid=[{}], status={} : {} ", event.getErrorMessage(), event.getStatus(), event.getVariableBindings());
+                        log.warn("{}, oid=[{}], status={} : {} ", toString(), event.getErrorMessage(), event.getStatus(), event.getVariableBindings());
                     }
                 }
 
@@ -341,7 +342,7 @@ public class SnmpManager implements AutoCloseable {
                     if (event.getStatus() == -1) {
                         throw new RuntimeException("oid[" + oid + "] " + event.getErrorMessage() + " result:" + result.size() + " timeout:" + this.timeout);
                     } else {
-                        log.warn("oid=[{}], status={} : {} ", event.getErrorMessage(), event.getStatus(), event.getVariableBindings());
+                        log.warn("{}, oid=[{}], status={} : {} ", toString(), event.getErrorMessage(), event.getStatus(), event.getVariableBindings());
                     }
                 }
 
@@ -384,7 +385,7 @@ public class SnmpManager implements AutoCloseable {
 //                return snmpCompletableFuture.get().getAll().toArray(VariableBinding[]::new);
 //            }
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("Failed to get SNMP response: {}, timeout={}, {}", e.getMessage(), timeout, toString());
             throw new RuntimeException(e.getMessage(), e);
         }
     }
@@ -440,7 +441,7 @@ public class SnmpManager implements AutoCloseable {
                 else {
                     int errorIndex = responsePDU.getErrorIndex();
                     String errorStatusText = responsePDU.getErrorStatusText();
-                    log.error("Error: Request Failed\nError Status = {}\nError Index = {}\nError Status Text = {}", errorStatus, errorIndex, errorStatusText);
+                    log.error("Error: Request Failed, {}\nError Status = {}\nError Index = {}\nError Status Text = {}", toString(), errorStatus, errorIndex, errorStatusText);
                     throw new RuntimeException(errorStatusText);
                 }
             }
@@ -541,5 +542,11 @@ public class SnmpManager implements AutoCloseable {
 //            target.setAuthoritativeEngineID(targetEngineId.getValue());
 //        }
         return target;
+    }
+
+
+    @Override
+    public String toString() {
+        return String.format("%s/%d", address, port );
     }
 }
