@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 import org.snmp4j.*;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.fluent.SnmpCompletableFuture;
@@ -394,9 +395,8 @@ public class SnmpManager implements AutoCloseable {
 //                return snmpCompletableFuture.get().getAll().toArray(VariableBinding[]::new);
 //            }
         } catch (Exception e) {
-            if (isLogPrint) {
-                log.error("Failed to get SNMP response: {}, timeout={}, {}", e.getMessage(), timeout, toString());
-            }
+            Level level = isLogPrint ? Level.ERROR : Level.DEBUG;
+            log.atLevel(level).log("Failed to get SNMP response: {}, timeout={}, {}", e.getMessage(), timeout, toString());
             throw new RuntimeException(e.getMessage(), e);
         }
     }
