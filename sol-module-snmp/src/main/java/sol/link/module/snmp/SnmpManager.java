@@ -186,8 +186,11 @@ public class SnmpManager implements AutoCloseable {
      * @throws IOException
      */
     public VariableBinding[] snmpGet(OID... oids) throws IOException {
+        return snmpGet(false, oids);
+    }
+    public VariableBinding[] snmpGet(boolean isLogPrint, OID... oids) throws IOException {
         PDU pdu = this.targetBuilder.pdu().type(PDU.GET).oid(oids).contextName("").build();
-        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu));
+        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), isLogPrint);
         /*
         PDU pdu = createPdu(oids);
         pdu.setType(PDU.GET);
@@ -376,6 +379,9 @@ public class SnmpManager implements AutoCloseable {
     }
 
     private VariableBinding[] parseResponse2(SnmpCompletableFuture snmpCompletableFuture) throws RuntimeException {
+        return parseResponse2(snmpCompletableFuture, false);
+    }
+    private VariableBinding[] parseResponse2(SnmpCompletableFuture snmpCompletableFuture, boolean isLogPrint) throws RuntimeException {
 
         try {
             return snmpCompletableFuture.get().getAll().toArray(VariableBinding[]::new);
@@ -385,7 +391,9 @@ public class SnmpManager implements AutoCloseable {
 //                return snmpCompletableFuture.get().getAll().toArray(VariableBinding[]::new);
 //            }
         } catch (Exception e) {
-            log.error("Failed to get SNMP response: {}, timeout={}, {}", e.getMessage(), timeout, toString());
+            if (isLogPrint) {
+                log.error("Failed to get SNMP response: {}, timeout={}, {}", e.getMessage(), timeout, toString());
+            }
             throw new RuntimeException(e.getMessage(), e);
         }
     }
