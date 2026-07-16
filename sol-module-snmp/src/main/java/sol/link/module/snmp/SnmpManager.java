@@ -186,7 +186,7 @@ public class SnmpManager implements AutoCloseable {
      * @throws IOException
      */
     public VariableBinding[] snmpGet(OID... oids) throws IOException {
-        return snmpGet(false, oids);
+        return snmpGet(true, oids);
     }
     public VariableBinding[] snmpGet(boolean isLogPrint, OID... oids) throws IOException {
         PDU pdu = this.targetBuilder.pdu().type(PDU.GET).oid(oids).contextName("").build();
@@ -204,8 +204,11 @@ public class SnmpManager implements AutoCloseable {
      * @throws IOException
      */
     public VariableBinding[] snmpGetNext(OID... oids) throws IOException {
+        return snmpGetNext(true, oids);
+    }
+    public VariableBinding[] snmpGetNext(boolean isLogPrint, OID... oids) throws IOException {
         PDU pdu = this.targetBuilder.pdu().type(PDU.GETNEXT).oid(oids).contextName("").build();
-        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu));
+        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), isLogPrint);
         /*
         PDU pdu = createPdu(oids);
         pdu.setType(PDU.GETNEXT);
@@ -379,7 +382,7 @@ public class SnmpManager implements AutoCloseable {
     }
 
     private VariableBinding[] parseResponse2(SnmpCompletableFuture snmpCompletableFuture) throws RuntimeException {
-        return parseResponse2(snmpCompletableFuture, false);
+        return parseResponse2(snmpCompletableFuture, true);
     }
     private VariableBinding[] parseResponse2(SnmpCompletableFuture snmpCompletableFuture, boolean isLogPrint) throws RuntimeException {
 
