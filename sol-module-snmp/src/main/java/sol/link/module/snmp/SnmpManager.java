@@ -51,6 +51,8 @@ public class SnmpManager implements AutoCloseable {
     private long timeout = 1000;
     private int engineBoots = 0;
 
+    private String contextName = "";
+
     private UsmUserEntry usmUserEntry = null;
     private OctetString targetEngineId = null;
     private OctetString localEngineId = null;
@@ -190,7 +192,7 @@ public class SnmpManager implements AutoCloseable {
         return snmpGet(true, oids);
     }
     public VariableBinding[] snmpGet(boolean isLogPrint, OID... oids) throws IOException {
-        PDU pdu = this.targetBuilder.pdu().type(PDU.GET).oid(oids).contextName("").build();
+        PDU pdu = this.targetBuilder.pdu().type(PDU.GET).oid(oids).contextName(this.contextName).build();
         return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), isLogPrint);
         /*
         PDU pdu = createPdu(oids);
@@ -208,7 +210,7 @@ public class SnmpManager implements AutoCloseable {
         return snmpGetNext(true, oids);
     }
     public VariableBinding[] snmpGetNext(boolean isLogPrint, OID... oids) throws IOException {
-        PDU pdu = this.targetBuilder.pdu().type(PDU.GETNEXT).oid(oids).contextName("").build();
+        PDU pdu = this.targetBuilder.pdu().type(PDU.GETNEXT).oid(oids).contextName(this.contextName).build();
         return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), isLogPrint);
         /*
         PDU pdu = createPdu(oids);
@@ -236,7 +238,7 @@ public class SnmpManager implements AutoCloseable {
      * @throws IOException
      */
     public VariableBinding[] snmpGetBulk(int nonRepeaters, int maxRepetitions, OID... oids) throws IOException {
-        PDU pdu = this.targetBuilder.pdu().type(PDU.GETBULK).oid(oids).build();
+        PDU pdu = this.targetBuilder.pdu().type(PDU.GETBULK).oid(oids).contextName(this.contextName).build();
         pdu.setNonRepeaters(nonRepeaters);
         pdu.setMaxRepetitions(maxRepetitions);
         return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu));
@@ -282,6 +284,10 @@ public class SnmpManager implements AutoCloseable {
             factory.setContextEngineID(new OctetString(this.snmpEngineId));
         }
 
+        if (this.contextName != null && !this.contextName.isEmpty()) {
+            factory.setContextName(new OctetString(this.contextName));
+        }
+
         factory.setNonRepeaters(nonRepeaters);
         factory.setMaxRepetitions(maxRepetitions);
 
@@ -316,7 +322,10 @@ public class SnmpManager implements AutoCloseable {
     public VariableBinding[] snmpWalk2(int nonRepeaters, int maxRepetitions, OID oid) {
         DefaultPDUFactory factory = new DefaultPDUFactory();
        // factory.setContextEngineID(new OctetString(""));
-       // factory.setContextName(new OctetString(""));
+
+        if (this.contextName != null && !this.contextName.isEmpty()) {
+            factory.setContextName(new OctetString(this.contextName));
+        }
 
         // v1/v2c와 v3 타켓 인증을 구분
         Target target = null;
@@ -372,6 +381,10 @@ public class SnmpManager implements AutoCloseable {
             if (this.targetEngineId != null) {
                 ((ScopedPDU) pdu).setContextEngineID(targetEngineId);
             }
+
+            if (this.contextName != null && !this.contextName.isEmpty()) {
+                ((ScopedPDU) pdu).setContextName(new OctetString(this.contextName));
+            }
         } else {
             pdu = new PDU();
         }
@@ -379,6 +392,7 @@ public class SnmpManager implements AutoCloseable {
         for (OID oid : oids) {
             pdu.add(new VariableBinding(oid));
         }
+
         return pdu;
     }
 
@@ -425,9 +439,9 @@ public class SnmpManager implements AutoCloseable {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private ResponseEvent send(PDU pdu) throws IOException {
         if (log.isDebugEnabled()) {
-            log.debug(String.format("SNMP %s Sending Request....", getPduTypeToString(pdu.getType())));
+            log.debug("SNMP {} Sending Request....", getPduTypeToString(pdu.getType()));
             for (int i = 0; i < pdu.getVariableBindings().size(); i++) {
-                log.debug("Oid = " + pdu.get(i));
+                log.debug("Oid = {}", pdu.get(i));
             }
         }
 
