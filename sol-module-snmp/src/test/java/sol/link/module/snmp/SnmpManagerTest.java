@@ -34,12 +34,13 @@ class SnmpManagerTest {
     void connectTestV3() throws IOException {
 
         SnmpManager snmpManager = new SnmpManager();
-        snmpManager.setSnmpVer(3).setAddress("192.168.0.206");
-        snmpManager.setSnmpUserId("solink1232");
+        snmpManager.setSnmpVer(3).setAddress("192.168.3.171").setPort(1161);
+        snmpManager.setContextName("alteon");
+        snmpManager.setSnmpUserId("solink");
         snmpManager.setSnmpSecurityLevel(2);
         snmpManager.setTimeout(10000);
-        snmpManager.setSnmpAuthType(1).setSnmpAuthKey("solink123");
-        snmpManager.setSnmpEncryptType(1).setSnmpEncryptKey("solink123");
+        snmpManager.setSnmpAuthType(5).setSnmpAuthKey("solid1234!@");
+        snmpManager.setSnmpEncryptType(4).setSnmpEncryptKey("solid1234!@");
         // snmpManager.setRoCommunity("solinㅁㅁk");
         snmpManager.connect();
         snmpManager.getSnmpSocket().listen();

@@ -20,6 +20,7 @@ import org.snmp4j.transport.DefaultUdpTransportMapping;
 import org.snmp4j.util.DefaultPDUFactory;
 import org.snmp4j.util.TreeEvent;
 import org.snmp4j.util.TreeUtils;
+import org.springframework.util.StringUtils;
 import sol.link.module.snmp.custom.SnmpBuilder2;
 import sol.link.module.snmp.custom.TargetBuilder2;
 import sol.link.module.snmp.security.PrivAES256C;
@@ -52,6 +53,8 @@ public class SnmpManager implements AutoCloseable {
     private int retries = 0;
     private long timeout = 1000;
     private int engineBoots = 0;
+
+    private String contextName = "";
 
     private UsmUserEntry usmUserEntry = null;
     private OctetString targetEngineId = null;
@@ -357,7 +360,7 @@ public class SnmpManager implements AutoCloseable {
      * @throws IOException
      */
     public VariableBinding[] snmpGet(OID... oids) throws IOException {
-        PDU pdu = this.targetBuilder.pdu().type(PDU.GET).oid(oids).contextName("").build();
+        PDU pdu = this.targetBuilder.pdu().type(PDU.GET).oid(oids).contextName(this.contextName).build();
         return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu));
         /*
         PDU pdu = createPdu(oids);
@@ -386,7 +389,7 @@ public class SnmpManager implements AutoCloseable {
      * @throws IOException
      */
     public VariableBinding[] snmpGetNext(OID... oids) throws IOException {
-        PDU pdu = this.targetBuilder.pdu().type(PDU.GETNEXT).oid(oids).contextName("").build();
+        PDU pdu = this.targetBuilder.pdu().type(PDU.GETNEXT).oid(oids).contextName(this.contextName).build();
         return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu));
         /*
         PDU pdu = createPdu(oids);
@@ -414,7 +417,7 @@ public class SnmpManager implements AutoCloseable {
      * @throws IOException
      */
     public VariableBinding[] snmpGetBulk(int nonRepeaters, int maxRepetitions, OID... oids) throws IOException {
-        PDU pdu = this.targetBuilder.pdu().type(PDU.GETBULK).oid(oids).build();
+        PDU pdu = this.targetBuilder.pdu().type(PDU.GETBULK).contextName(this.contextName).oid(oids).build();
         pdu.setNonRepeaters(nonRepeaters);
         pdu.setMaxRepetitions(maxRepetitions);
         return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu));
@@ -498,6 +501,10 @@ public class SnmpManager implements AutoCloseable {
             factory.setPduType(PDU.GETNEXT);
             factory.setNonRepeaters(nonRepeaters);
             factory.setMaxRepetitions(maxRepetitions);
+        }
+
+        if (StringUtils.hasText(this.contextName)) {
+            factory.setContextName(new OctetString(this.contextName));
         }
 
         TreeUtils treeUtils = new TreeUtils(this.snmpSocket, factory);
