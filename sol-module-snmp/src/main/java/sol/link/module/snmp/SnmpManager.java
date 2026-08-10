@@ -72,6 +72,7 @@ public class SnmpManager implements AutoCloseable {
         Address targetAddress = GenericAddress.parse(String.format("udp:%s/%s", this.address, this.port));
 
         SnmpBuilder2 snmpBuilder = new SnmpBuilder2();
+        snmpBuilder.initSecurityProtocols();
         snmpBuilder.udp(); //.threads(availableProcessors);
 
         targetBuilder = snmpBuilder.target2(targetAddress);

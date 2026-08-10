@@ -29,6 +29,26 @@ class SnmpManagerTest {
     }
 
     @Test
+    void connectTestV32() throws IOException {
+
+        SnmpManager snmpManager = new SnmpManager();
+        snmpManager.setSnmpVer(3).setAddress("192.168.2.131").setPort(161);
+        snmpManager.setSnmpUserId("ipccems");
+        snmpManager.setSnmpSecurityLevel(2);
+        snmpManager.setTimeout(10000);
+        snmpManager.setSnmpAuthType(1).setSnmpAuthKey("HANAFW!@");
+        snmpManager.setSnmpEncryptType(1).setSnmpEncryptKey("HANAFW@#");
+        // snmpManager.setRoCommunity("solinㅁㅁk");
+        snmpManager.connect();
+        snmpManager.getSnmpSocket().listen();
+
+        VariableBinding[] result =  snmpManager.snmpGet(new OID(".1.3.6.1.2.1.1.2.0"));
+        for (VariableBinding val : result) {
+            System.out.println(val.getVariable().toString());
+        }
+    }
+
+    @Test
     void connectTestV3WithSnmpSim() throws IOException {
 
         SnmpManager snmpManager = new SnmpManager();
