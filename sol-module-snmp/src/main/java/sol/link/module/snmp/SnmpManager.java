@@ -194,7 +194,7 @@ public class SnmpManager implements AutoCloseable {
     }
     public VariableBinding[] snmpGet(boolean isLogPrint, OID... oids) throws IOException {
         PDU pdu = this.targetBuilder.pdu().type(PDU.GET).oid(oids).contextName(this.contextName).build();
-        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), isLogPrint);
+        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), isLogPrint, oids);
         /*
         PDU pdu = createPdu(oids);
         pdu.setType(PDU.GET);
@@ -212,7 +212,7 @@ public class SnmpManager implements AutoCloseable {
     }
     public VariableBinding[] snmpGetNext(boolean isLogPrint, OID... oids) throws IOException {
         PDU pdu = this.targetBuilder.pdu().type(PDU.GETNEXT).oid(oids).contextName(this.contextName).build();
-        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), isLogPrint);
+        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), isLogPrint, oids);
         /*
         PDU pdu = createPdu(oids);
         pdu.setType(PDU.GETNEXT);
@@ -242,7 +242,7 @@ public class SnmpManager implements AutoCloseable {
         PDU pdu = this.targetBuilder.pdu().type(PDU.GETBULK).oid(oids).contextName(this.contextName).build();
         pdu.setNonRepeaters(nonRepeaters);
         pdu.setMaxRepetitions(maxRepetitions);
-        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu));
+        return parseResponse2(SnmpCompletableFuture.send(this.snmpSocket, this.target, pdu), true, oids);
 
         /*
         PDU pdu = createPdu(oids);
@@ -398,20 +398,18 @@ public class SnmpManager implements AutoCloseable {
     }
 
     private VariableBinding[] parseResponse2(SnmpCompletableFuture snmpCompletableFuture) throws RuntimeException {
-        return parseResponse2(snmpCompletableFuture, true);
+        return parseResponse2(snmpCompletableFuture, true, (OID[]) null);
     }
-    private VariableBinding[] parseResponse2(SnmpCompletableFuture snmpCompletableFuture, boolean isLogPrint) throws RuntimeException {
-
+    private VariableBinding[] parseResponse2(SnmpCompletableFuture snmpCompletableFuture, boolean isLogPrint, OID... oids) throws RuntimeException {
         try {
             return snmpCompletableFuture.get().getAll().toArray(VariableBinding[]::new);
-//            if (snmpCompletableFuture.getResponseEvent().getResponse() == null) {
-//                return null;
-//            } else {
-//                return snmpCompletableFuture.get().getAll().toArray(VariableBinding[]::new);
-//            }
         } catch (Exception e) {
             Level level = isLogPrint ? Level.ERROR : Level.DEBUG;
-            log.atLevel(level).log("Failed to get SNMP response: {}, timeout={}, {}", e.getMessage(), timeout, toString());
+            String oidStr = "";
+            if (oids != null && oids.length > 0) {
+                oidStr = Arrays.stream(oids).map(OID::toDottedString).reduce((a, b) -> a + ", " + b).orElse("");
+            }
+            log.atLevel(level).log("Failed to get SNMP response: {}, timeout={}, {}, OIDs={}", e.getMessage(), timeout, toString(), oidStr);
             throw new RuntimeException(e.getMessage(), e);
         }
     }
